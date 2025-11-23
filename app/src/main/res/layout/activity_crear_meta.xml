@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:padding="16dp"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Título de la meta -->
+    <EditText
+        android:id="@+id/edtTituloMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Título"
+        android:inputType="text"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Descripción de la meta -->
+    <EditText
+        android:id="@+id/edtDescripcionMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Descripción"
+        android:inputType="textMultiLine"
+        android:layout_marginBottom="12dp"
+        android:minLines="3" />
+
+    <!-- Progreso de la meta -->
+    <TextView
+        android:id="@+id/txtProgreso"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Progreso (%)"
+        android:layout_marginBottom="4dp" />
+
+    <SeekBar
+        android:id="@+id/seekProgreso"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:max="100"
+        android:layout_marginBottom="12dp" />
+
+    <!-- Completada -->
+    <Switch
+        android:id="@+id/switchCompletada"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Completada"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Botón Guardar -->
+    <Button
+        android:id="@+id/btnGuardarMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Guardar Meta" />
+
+</LinearLayout>

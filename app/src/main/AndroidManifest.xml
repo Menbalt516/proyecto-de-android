@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@drawable/ic_default_user"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.MiAgenda">
+
+        <activity
+            android:name=".presentacion.EventoDetalleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentacion.MainActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity> <!-- ACTIVIDADES DE PERFIL -->
+        <activity
+            android:name=".presentacion.PerfilActivity"
+            android:exported="false" /> <!-- ACTIVIDADES DE METAS -->
+        <activity
+            android:name=".presentacion.EventoCrearActivity"
+            android:exported="false"
+            android:label="Detalle de Meta" />
+        <activity
+            android:name=".presentacion.SubMetasActivity"
+            android:exported="false"
+            android:label="Gestión de Sub-Metas" />
+        <activity
+            android:name=".presentacion.MetaCrearActivity"
+            android:exported="false"
+            android:label="Crear/Editar Evento" />
+        <activity
+            android:name=".presentacion.EventoListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentacion.CalendarEventosActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentacion.MetaDetalleActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentacion.MetasListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".presentacion.MetaSelectorActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>
