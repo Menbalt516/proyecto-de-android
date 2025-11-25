@@ -8,14 +8,26 @@ import android.database.sqlite.SQLiteDatabase;
 import com.m.d.f.miagenda.modelos.Perfil;
 
 public class PerfilDAO {
-    private DatabaseHelper dbHelper;
+
+    private final DatabaseHelper dbHelper;
 
     public PerfilDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        this.dbHelper = new DatabaseHelper(context);
     }
 
-    public long guardarPerfil(Perfil perfil) {
+    private SQLiteDatabase getWritable() {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
+        db.execSQL("PRAGMA foreign_keys = ON;");
+        return db;
+    }
+
+    private SQLiteDatabase getReadable() {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+        db.execSQL("PRAGMA foreign_keys = ON;");
+        return db;
+    }
+    public long guardarPerfil(Perfil perfil) {
+        SQLiteDatabase db = getWritable();
 
         ContentValues valores = new ContentValues();
         valores.put("id", 1);
@@ -24,28 +36,36 @@ public class PerfilDAO {
         valores.put("edad", perfil.getEdad());
         valores.put("imagen_uri", perfil.getImagenUri());
 
-        long id = db.replace("perfil", null, valores); // REPLACE: evita duplicados
+        long id = db.replace("perfil", null, valores);
         db.close();
         return id;
     }
-
     public Perfil obtenerPerfil() {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT * FROM perfil LIMIT 1", null);
+        SQLiteDatabase db = getReadable();
+        Cursor cursor = db.rawQuery("SELECT * FROM perfil WHERE id = 1", null);
 
         Perfil perfil = null;
 
-        if (c.moveToFirst()) {
+        if (cursor.moveToFirst()) {
             perfil = new Perfil(
-                    c.getInt(c.getColumnIndexOrThrow("id")),
-                    c.getString(c.getColumnIndexOrThrow("nombre")),
-                    c.getString(c.getColumnIndexOrThrow("apellidos")),
-                    c.getInt(c.getColumnIndexOrThrow("edad")),
-                    c.getString(c.getColumnIndexOrThrow("imagen_uri"))
+                    cursor.getInt(cursor.getColumnIndexOrThrow("id")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("nombre")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("apellidos")),
+                    cursor.getInt(cursor.getColumnIndexOrThrow("edad")),
+                    cursor.getString(cursor.getColumnIndexOrThrow("imagen_uri"))
             );
         }
-        c.close();
+
+        cursor.close();
         db.close();
+
+        // **Si no existe, crear uno vacío automáticamente**
+        if (perfil == null) {
+            Perfil nuevo = new Perfil(1, "", "", 0, null);
+            guardarPerfil(nuevo);
+            return nuevo;
+        }
+
         return perfil;
     }
 }

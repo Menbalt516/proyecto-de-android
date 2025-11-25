@@ -2,178 +2,156 @@ package com.m.d.f.miagenda.presentacion;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Switch;
+import android.widget.ProgressBar;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.m.d.f.miagenda.R;
+import com.m.d.f.miagenda.datos.EventoDAO;
+import com.m.d.f.miagenda.datos.EventoMetaDAO;
+import com.m.d.f.miagenda.datos.SubMetaDAO;
 import com.m.d.f.miagenda.datos.MetaDAO;
-import com.m.d.f.miagenda.modelos.Meta;
+import com.m.d.f.miagenda.modelos.Evento;
 import com.m.d.f.miagenda.modelos.SubMeta;
-import com.m.d.f.miagenda.negocio.SubMetaNegocio;
+import com.m.d.f.miagenda.modelos.Meta;
+import com.m.d.f.miagenda.presentacion.adapters.EventoAdapter;
 import com.m.d.f.miagenda.presentacion.adapters.SubMetaAdapter;
 
 import java.util.List;
 
 public class MetaDetalleActivity extends AppCompatActivity {
 
-    private TextView txtTituloMeta, txtDescripcionMeta, txtProgreso;
-    private RecyclerView rvSubMetas;
-    private Button btnAsociar;
-    private Button btnGuardarSubMeta;
+    public static final String EXTRA_META_ID = "meta_id";
+
+    private TextView txtTitulo, txtDescripcion, txtPorcentajeMeta;
+    private ProgressBar progressBar;
+    private Button btnEditarProgreso, btnAgregarSubMeta, btnVincularEvento;
+    private RecyclerView rvSubMetas, rvEventos;
 
     private MetaDAO metaDAO;
-    private SubMetaNegocio subMetaNegocio;
+    private SubMetaDAO subMetaDAO;
+    private EventoDAO eventoDAO;
+    private EventoMetaDAO eventoMetaDAO;
 
-    private int metaId; // AHORA SE RECIBE POR INTENT
+    private Meta meta;
+    private int metaId;
+
+    // Adaptadores
+    private SubMetaAdapter subMetaAdapter;
+    private EventoAdapter eventoAdapter;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_meta_detalle);
 
-        txtTituloMeta = findViewById(R.id.txtTituloMeta);
-        txtDescripcionMeta = findViewById(R.id.txtDescripcionMeta);
-        txtProgreso = findViewById(R.id.txtProgreso);
-        rvSubMetas = findViewById(R.id.rvSubMetas);
-
-        btnAsociar = findViewById(R.id.btnAsociar);
-        btnGuardarSubMeta = findViewById(R.id.btnGuardarSubMeta); // ← ESTE FALTABA
-
-        rvSubMetas.setLayoutManager(new LinearLayoutManager(this));
-
-        metaId = getIntent().getIntExtra("metaId", -1);
-
+        // Inicializar DAOs
         metaDAO = new MetaDAO(this);
-        subMetaNegocio = new SubMetaNegocio(this);
+        subMetaDAO = new SubMetaDAO(this);
+        eventoDAO = new EventoDAO(this);
+        eventoMetaDAO = new EventoMetaDAO(this);
+
+        // Inicializar vistas
+        txtTitulo = findViewById(R.id.txtTitulo);
+        txtDescripcion = findViewById(R.id.txtDescripcion);
+        txtPorcentajeMeta = findViewById(R.id.txtPorcentajeMeta);
+        progressBar = findViewById(R.id.progressBar);
+        btnEditarProgreso = findViewById(R.id.btnEditarProgreso);
+        btnAgregarSubMeta = findViewById(R.id.btnAgregarSubMeta);
+        btnVincularEvento = findViewById(R.id.btnVincularEvento);
+        rvSubMetas = findViewById(R.id.rvSubMetas);
+        rvEventos = findViewById(R.id.rvEventos);
+
+        // Configurar RecyclerViews
+        rvSubMetas.setLayoutManager(new LinearLayoutManager(this));
+        rvEventos.setLayoutManager(new LinearLayoutManager(this));
+
+        // Obtener ID de la Meta
+        metaId = getIntent().getIntExtra(EXTRA_META_ID, -1);
+        if (metaId == -1) {
+            Toast.makeText(this, "Meta no encontrada", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
 
         cargarMeta();
-        cargarSubMetas();
 
+        // Botón para ajustar progreso manualmente
+        btnEditarProgreso.setOnClickListener(v -> mostrarDialogoProgreso());
 
-        btnAsociar.setOnClickListener(v -> {
-            Intent intent = new Intent(MetaDetalleActivity.this, EventoListActivity.class);
-            startActivityForResult(intent, 100);
+        // Botón para agregar Sub-Meta
+        btnAgregarSubMeta.setOnClickListener(v -> {
+            Intent i = new Intent(this, CrearEditarSubmetaActivity.class);
+            i.putExtra(CrearEditarSubmetaActivity.EXTRA_META_ID, metaId);
+            startActivity(i);
         });
 
-        btnGuardarSubMeta.setOnClickListener(v -> mostrarDialogNuevaSubMeta());
+        // Botón para vincular Evento
+        btnVincularEvento.setOnClickListener(v -> {
+            Intent i = new Intent(this, EventosListActivity.class);
+            i.putExtra(EventosListActivity.EXTRA_META_ID, metaId);
+            startActivity(i);
+        });
     }
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 100 && resultCode == RESULT_OK) {
-
-            int eventoId = data.getIntExtra("eventoId", -1);
-
-            if (eventoId != -1) {
-                Toast.makeText(this, "Evento asociado: " + eventoId, Toast.LENGTH_SHORT).show();
-
-                // 🔥 Aquí guardas en BD que esta meta tiene ese evento
-                metaDAO.asociarEvento(metaId, eventoId);
-
-                // Opcional: mostrar en pantalla
-                txtProgreso.setText("Evento asociado (ID " + eventoId + ")");
-            }
-        }
-    }
-
 
     private void cargarMeta() {
-        Meta m = metaDAO.obtenerPorId(metaId);
+        meta = metaDAO.obtenerPorId(metaId);
+        if (meta == null) return;
 
-        if (m != null) {
-            txtTituloMeta.setText(m.getTitulo());
-            txtDescripcionMeta.setText(m.getDescripcion());
-            txtProgreso.setText("Progreso: " + m.getProgreso() + "%");
-        }
-    }
+        txtTitulo.setText(meta.getTitulo());
+        txtDescripcion.setText(meta.getDescripcion());
+        progressBar.setProgress(Math.round(meta.getProgreso()));
+        txtPorcentajeMeta.setText(Math.round(meta.getProgreso()) + "%");
 
-    private void cargarSubMetas() {
-        List<SubMeta> lista = subMetaNegocio.listarPorMeta(metaId);
+        // Cargar Sub-Metas
+        List<SubMeta> subMetas = subMetaDAO.listarPorMeta(metaId);
+        subMetaAdapter = new SubMetaAdapter(subMetas, this, metaId);
 
-        SubMetaAdapter adapter = new SubMetaAdapter(lista, this, subMetaNegocio);
-        rvSubMetas.setAdapter(adapter);
-    }
+        rvSubMetas.setAdapter(subMetaAdapter);
 
-    private void mostrarDialogoAgregar() {
-
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Nueva SubMeta");
-
-        // >>> ESTE ES EL CAMBIO IMPORTANTE <<<
-        EditText input = new EditText(this);
-        input.setHint("Título de la SubMeta");
-        builder.setView(input);
-
-        builder.setPositiveButton("Guardar", (dialog, which) -> {
-
-            String titulo = input.getText().toString().trim();
-
-            if (titulo.isEmpty()) {
-                Toast.makeText(this, "Ingrese un título", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            SubMeta s = new SubMeta(titulo, false, metaId);
-
-            long id = subMetaNegocio.agregarSubMeta(s);
-
-            if (id > 0) {
-                Toast.makeText(this, "Agregado", Toast.LENGTH_SHORT).show();
-                cargarSubMetas();
+        // Cargar Eventos vinculados
+        List<Evento> eventos = eventoMetaDAO.listarEventosPorMeta(metaId);
+        eventoAdapter = new EventoAdapter(eventos, new EventoAdapter.OnItemClickListener() {
+            @Override
+            public void onItemClick(Evento evento) {
+                // Aquí manejas el clic (si quieres abrir detalles)
             }
         });
+        rvEventos.setAdapter(eventoAdapter);
+    }
 
+    private void mostrarDialogoProgreso() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Ajustar Progreso Manual");
+
+        final SeekBar seekBar = new SeekBar(this);
+        seekBar.setMax(100);
+        seekBar.setProgress(Math.round(meta.getProgreso()));
+        builder.setView(seekBar);
+
+        builder.setPositiveButton("Aceptar", (dialog, which) -> {
+            int nuevoProgreso = seekBar.getProgress();
+            meta.setProgreso(nuevoProgreso);
+            metaDAO.actualizar(meta);
+            progressBar.setProgress(nuevoProgreso);
+            txtPorcentajeMeta.setText(nuevoProgreso + "%");
+        });
         builder.setNegativeButton("Cancelar", null);
         builder.show();
     }
-    private void mostrarDialogNuevaSubMeta() {
 
-        android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(this);
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_nueva_submeta, null);
-        builder.setView(dialogView);
-
-        android.app.AlertDialog dialog = builder.create();
-        dialog.show();
-
-        EditText edtTitulo = dialogView.findViewById(R.id.edtTituloSubMeta);
-        EditText edtDescripcion = dialogView.findViewById(R.id.edtDescripcionSubMeta);
-        Switch switchCompletada = dialogView.findViewById(R.id.switchCompletada);
-        Button btnGuardarSubMeta = dialogView.findViewById(R.id.btnGuardarSubMeta);
-
-        btnGuardarSubMeta.setOnClickListener(v -> {
-
-            String titulo = edtTitulo.getText().toString().trim();
-            String descripcion = edtDescripcion.getText().toString().trim();
-            boolean completada = switchCompletada.isChecked();
-
-            if (titulo.isEmpty()) {
-                edtTitulo.setError("El título es obligatorio");
-                return;
-            }
-
-            // Ajusta tu constructor según tu clase SubMeta
-            SubMeta nueva = new SubMeta(titulo, descripcion, completada, metaId);
-
-            long id = subMetaNegocio.agregarSubMeta(nueva);
-
-            if (id > 0) {
-                Toast.makeText(this, "SubMeta guardada correctamente", Toast.LENGTH_SHORT).show();
-                cargarSubMetas();
-                dialog.dismiss();
-            } else {
-                Toast.makeText(this, "Error al guardar la SubMeta", Toast.LENGTH_SHORT).show();
-            }
-        });
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Recargar Sub-Metas y Eventos por si hubo cambios
+        if (meta != null) cargarMeta();
     }
 }

@@ -8,37 +8,58 @@ import com.m.d.f.miagenda.modelos.Evento;
 import java.util.List;
 
 public class EventoNegocio {
-    private EventoDAO eventoDAO;
+    private final EventoDAO eventoDAO;
 
     public EventoNegocio(Context context) {
         eventoDAO = new EventoDAO(context);
     }
 
+    // AGREGAR EVENTO
     public long agregarEvento(Evento evento) {
 
         if (evento.getTitulo() == null || evento.getTitulo().trim().isEmpty())
-            throw new IllegalArgumentException("El título es obligatorio");
+            throw new IllegalArgumentException("El título es obligatorio.");
 
-        // Validación correcta usando el campo real
-        if (evento.getFechaMillis() <= 0)
-            throw new IllegalArgumentException("Debe seleccionar una fecha válida");
+        if (evento.getFecha() <= 0)
+            throw new IllegalArgumentException("Debe seleccionar una fecha válida.");
 
         return eventoDAO.insertar(evento);
     }
 
-    public int actualizarEvento(Evento evento) {
+    // ACTUALIZAR
+    public boolean actualizarEvento(Evento evento) {
+        if (evento.getId() <= 0)
+            throw new IllegalArgumentException("ID del evento no válido.");
+
+        if (evento.getTitulo() == null || evento.getTitulo().trim().isEmpty())
+            throw new IllegalArgumentException("El título es obligatorio.");
+
         return eventoDAO.actualizar(evento);
     }
 
-    public int eliminarEvento(int id) {
+    // ELIMINAR
+    public boolean eliminarEvento(int id) {
+        if (id <= 0)
+            throw new IllegalArgumentException("ID no válido.");
+
         return eventoDAO.eliminar(id);
     }
 
+    // OBTENER UNO
     public Evento obtenerEvento(int id) {
         return eventoDAO.obtenerPorId(id);
     }
 
+    // LISTAR TODOS
     public List<Evento> listarEventos() {
-        return eventoDAO.listarTodos();
+        return eventoDAO.listar();
     }
+
+    // LISTAR POR DÍA
+    //public List<Evento> obtenerEventosPorDia(long inicioDia, long finDia) {
+       // if (inicioDia < 0 || finDia < 0 || inicioDia > finDia)
+         //   throw new IllegalArgumentException("Rango de fecha no válido.");
+
+       // return eventoDAO.obtenerEventosPorDia(inicioDia, finDia);
+    //}
 }

@@ -55,4 +55,3 @@ public class PerfilActivity extends AppCompatActivity {
         Toast.makeText(this, "Perfil guardado", Toast.LENGTH_SHORT).show();
     }
 }
-

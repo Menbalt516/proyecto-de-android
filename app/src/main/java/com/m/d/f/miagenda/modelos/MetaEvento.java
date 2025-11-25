@@ -23,5 +23,3 @@ public class MetaEvento {
     public int getEventoId() { return eventoId; }
     public void setEventoId(int eventoId) { this.eventoId = eventoId; }
 }
-
-

@@ -7,27 +7,30 @@ import android.database.sqlite.SQLiteOpenHelper;
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String DATABASE_NAME = "miagenda_db";
-    private static final int DATABASE_VERSION = 5; // Incrementar si cambias algo
+    private static final int DATABASE_VERSION = 7;
 
-    private static final String CREATE_TABLE_PERFIL = "CREATE TABLE perfil (" +
-            "id INTEGER PRIMARY KEY DEFAULT 1," +
-            "nombre TEXT NOT NULL," +
-            "apellidos TEXT," +
-            "edad INTEGER," +
-            "imagen_uri TEXT" +
-            ");";
+    // Tabla PERFIL (App monousuario)
+    private static final String CREATE_TABLE_PERFIL =
+            "CREATE TABLE perfil (" +
+                    "id INTEGER PRIMARY KEY DEFAULT 1," +
+                    "nombre TEXT NOT NULL," +
+                    "apellidos TEXT," +
+                    "edad INTEGER," +
+                    "imagen_uri TEXT" +
+                    ");";
 
-    private static final String CREATE_TABLE_EVENTOS = "CREATE TABLE eventos (" +
-            "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-            "titulo TEXT NOT NULL," +
-            "fecha INTEGER NOT NULL," +
-            "hora TEXT NOT NULL," +
-            "descripcion TEXT," +
-            "categoria TEXT NOT NULL," +
-            "recordatorio INTEGER NOT NULL DEFAULT 0," +
-            "meta_asociada_id INTEGER DEFAULT 0" +
-            ");";
+    private static final String CREATE_TABLE_EVENTOS =
+            "CREATE TABLE eventos (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "titulo TEXT NOT NULL," +
+                    "fecha INTEGER NOT NULL," +
+                    "hora TEXT NOT NULL," +
+                    "descripcion TEXT," +
+                    "categoria TEXT NOT NULL," +
+                    "recordatorio INTEGER NOT NULL DEFAULT 0" +
+                    ");";
 
+    // Tabla METAS
     private static final String CREATE_TABLE_METAS =
             "CREATE TABLE metas (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -37,6 +40,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     "completada INTEGER DEFAULT 0" +
                     ");";
 
+    // Tabla SUBMETAS
     private static final String CREATE_TABLE_SUBMETAS =
             "CREATE TABLE submetas (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -47,6 +51,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(metaId) REFERENCES metas(id) ON DELETE CASCADE" +
                     ");";
 
+    // Relación EVENTO ↔ META (Muchos a muchos)
     private static final String CREATE_TABLE_EVENTO_META =
             "CREATE TABLE evento_meta (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -56,6 +61,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     "FOREIGN KEY(metaId) REFERENCES metas(id) ON DELETE CASCADE" +
                     ");";
 
+    // Relación EVENTO ↔ SUBMETA (Muchos a muchos)
     private static final String CREATE_TABLE_EVENTO_SUBMETA =
             "CREATE TABLE evento_submeta (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT, " +

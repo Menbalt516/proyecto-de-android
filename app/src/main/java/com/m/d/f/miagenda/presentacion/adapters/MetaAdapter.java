@@ -13,44 +13,51 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.m.d.f.miagenda.R;
 import com.m.d.f.miagenda.modelos.Meta;
-import com.m.d.f.miagenda.negocio.SubMetaNegocio;
-import com.m.d.f.miagenda.presentacion.SubMetasActivity;
+import com.m.d.f.miagenda.presentacion.MetasDetalleActivity;
 
 import java.util.List;
 
-public class MetaAdapter extends RecyclerView.Adapter<MetaAdapter.MetaViewHolder> {
+public class MetaAdapter extends RecyclerView.Adapter<MetaAdapter.ViewHolder> {
 
-    private Context context;
     private List<Meta> metaList;
+    private Context context;
 
-    // Constructor
-    public MetaAdapter(Context context, List<Meta> metaList) {
-        this.context = context;
+    public MetaAdapter(List<Meta> metaList, Context context) {
         this.metaList = metaList;
+        this.context = context;
     }
 
     @NonNull
     @Override
-    public MetaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(context).inflate(R.layout.item_meta, parent, false);
-        return new MetaViewHolder(view);
+    public MetaAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_meta, parent, false);
+        return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MetaViewHolder holder, int position) {
-        Meta meta = metaList.get(position);
-        //int metaId = meta.getId();
+    public void onBindViewHolder(@NonNull MetaAdapter.ViewHolder holder, int position) {
+        Meta m = metaList.get(position);
+        holder.txtTitulo.setText(m.getTitulo());
+        holder.txtDescripcion.setText(m.getDescripcion());
 
-        holder.txtTitulo.setText(meta.getTitulo());
-        holder.txtDescripcion.setText(meta.getDescripcion());
-        holder.progresoMeta.setProgress((int) meta.getProgreso());
-        holder.txtPorcentaje.setText((int) meta.getProgreso() + "%");
+        int progreso = Math.round(m.getProgreso()); // 0..100
+        holder.progressBar.setProgress(progreso);
+        holder.txtPorcentaje.setText(progreso + "%");
 
-        // Click en el item para abrir SubMetasActivity
+        if (m.getCompletada()) {
+            holder.progressBar.setProgress(100);
+            holder.txtPorcentaje.setText("100%");
+        }
+
+        //holder.itemView.setOnClickListener(v -> {
+            //Intent i = new Intent(context, MetasDetalleActivity.class);
+           // i.putExtra("metaId", m.getId());
+            //context.startActivity(i);
+        //});
         holder.itemView.setOnClickListener(v -> {
-            Intent intent = new Intent(context, SubMetasActivity.class);
-            intent.putExtra("metaId", meta.getId());
-            context.startActivity(intent);
+            Intent i = new Intent(v.getContext(), MetasDetalleActivity.class);
+            i.putExtra("metaId", m.getId());
+            v.getContext().startActivity(i);
         });
     }
 
@@ -59,34 +66,15 @@ public class MetaAdapter extends RecyclerView.Adapter<MetaAdapter.MetaViewHolder
         return metaList.size();
     }
 
-    // Actualiza la lista completa
-    public void actualizarLista(List<Meta> nuevasMetas) {
-        metaList.clear();
-        metaList.addAll(nuevasMetas);
-        notifyDataSetChanged();
-    }
-
-    // Actualiza solo el progreso de una meta
-    public void actualizarProgreso(int metaId, int porcentaje) {
-        for (Meta m : metaList) {
-            if (m.getId() == metaId) {
-                m.setProgreso(porcentaje);
-                notifyDataSetChanged();
-                break;
-            }
-        }
-    }
-
-    public static class MetaViewHolder extends RecyclerView.ViewHolder {
+    public static class ViewHolder extends RecyclerView.ViewHolder {
         TextView txtTitulo, txtDescripcion, txtPorcentaje;
-        ProgressBar progresoMeta;
-
-        public MetaViewHolder(@NonNull View itemView) {
+        ProgressBar progressBar;
+        public ViewHolder(@NonNull View itemView) {
             super(itemView);
             txtTitulo = itemView.findViewById(R.id.txtTituloMeta);
             txtDescripcion = itemView.findViewById(R.id.txtDescripcionMeta);
-            progresoMeta = itemView.findViewById(R.id.progresoMeta);
-            txtPorcentaje = itemView.findViewById(R.id.txtPorcentaje);
+            txtPorcentaje = itemView.findViewById(R.id.txtProgresoMeta);
+            progressBar = itemView.findViewById(R.id.progressMeta);
         }
     }
 }

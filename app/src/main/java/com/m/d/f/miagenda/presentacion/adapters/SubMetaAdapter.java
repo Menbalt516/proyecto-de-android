@@ -4,76 +4,82 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.ImageButton;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.m.d.f.miagenda.R;
 import com.m.d.f.miagenda.modelos.SubMeta;
 import com.m.d.f.miagenda.negocio.SubMetaNegocio;
+import com.m.d.f.miagenda.negocio.MetaNegocio;
 
 import java.util.List;
 
 public class SubMetaAdapter extends RecyclerView.Adapter<SubMetaAdapter.ViewHolder> {
 
     private List<SubMeta> lista;
-    private Context ctx;
-    private SubMetaNegocio negocio;
+    private Context context;
+    private SubMetaNegocio subMetaNegocio;
+    private MetaNegocio metaNegocio;
+    private int parentMetaId;
 
-
-    public SubMetaAdapter(List<SubMeta> lista, Context ctx, SubMetaNegocio negocio) {
+    public SubMetaAdapter(List<SubMeta> lista, Context context, int parentMetaId) {
         this.lista = lista;
-        this.ctx = ctx;
-        this.negocio = negocio;
+        this.context = context;
+        this.parentMetaId = parentMetaId;
+        this.subMetaNegocio = new SubMetaNegocio(context);
+        this.metaNegocio = new MetaNegocio(context);
     }
 
+    @NonNull
     @Override
-    public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View v = LayoutInflater.from(ctx).inflate(R.layout.item_submeta, parent, false);
+    public SubMetaAdapter.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_submeta, parent, false);
         return new ViewHolder(v);
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder h, int pos) {
-        SubMeta s = lista.get(pos);
+    public void onBindViewHolder(@NonNull SubMetaAdapter.ViewHolder holder, int position) {
+        SubMeta s = lista.get(position);
+        holder.txtTitulo.setText(s.getTitulo());
+        holder.chkCompletada.setChecked(s.isCompletada());
 
-        h.titulo.setText(s.getTitulo());
-        h.chk.setChecked(s.isCompletada());
-
-
-        h.chk.setOnClickListener(v -> {
-            s.setCompletada(h.chk.isChecked());
-            negocio.actualizarSubMeta(s);
+        holder.chkCompletada.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // actualizar objeto y persistir
+            s.setCompletada(isChecked);
+            boolean ok = subMetaNegocio.actualizarSubMeta(s);
+            if (!ok) {
+                Toast.makeText(context, "No se pudo actualizar sub-meta", Toast.LENGTH_SHORT).show();
+            } else {
+                // recalcular progreso de la meta (SubMetaDAO ya lo hace, pero reforzamos recarga si queremos UI inmediata)
+                metaNegocio.recalcularProgreso(parentMetaId);
+            }
         });
 
-        h.btnEliminar.setOnClickListener(v -> {
-            negocio.eliminarSubMeta(s.getId(), s.getMetaId());
-            lista.remove(pos);
-            notifyItemRemoved(pos);
+        holder.btnEditar.setOnClickListener(v -> {
+            // aquí podrías abrir CrearSubMetaActivity en modo edición
+            Toast.makeText(context, "Editar SubMeta: " + s.getTitulo(), Toast.LENGTH_SHORT).show();
         });
     }
 
     @Override
-    public int getItemCount() { return lista.size(); }
+    public int getItemCount() {
+        return lista.size();
+    }
 
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        TextView titulo;
-        CheckBox chk;
-        Button btnEliminar;
-
-        public ViewHolder(View item) {
-            super(item);
-            titulo = item.findViewById(R.id.txtTituloSubmeta);
-            chk = item.findViewById(R.id.chkCompletado);
-            btnEliminar = item.findViewById(R.id.btnEliminarSubMeta);
+    public static class ViewHolder extends RecyclerView.ViewHolder {
+        CheckBox chkCompletada;
+        TextView txtTitulo;
+        ImageButton btnEditar;
+        public ViewHolder(@NonNull View itemView) {
+            super(itemView);
+            chkCompletada = itemView.findViewById(R.id.chkCompletada);
+            txtTitulo = itemView.findViewById(R.id.txtTituloSubMeta);
+            btnEditar = itemView.findViewById(R.id.btnEditarSubMeta);
         }
     }
-    public void actualizarLista(List<SubMeta> nuevasSubMetas) {
-        this.lista.clear();
-        this.lista.addAll(nuevasSubMetas);
-        notifyDataSetChanged();
-    }
-
 }

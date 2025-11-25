@@ -1,0 +1,83 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    tools:context=".presentacion.CrearEditarSubmetaActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Título de la Sub-Meta"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edtTituloSubMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ej: Estudiar Módulo 5"
+            android:inputType="textCapSentences"
+            android:minHeight="48dp"
+            android:layout_marginBottom="12dp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Descripción"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <EditText
+            android:id="@+id/edtDescripcionSubMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Detalles de la tarea"
+            android:inputType="textMultiLine"
+            android:minHeight="48dp"
+            android:layout_marginBottom="16dp" />
+
+        <CheckBox
+            android:id="@+id/chkCompletadaSubMeta"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Marcar como Completada"
+            android:layout_marginBottom="24dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal"
+            android:layout_marginBottom="24dp">
+
+            <Button
+                android:id="@+id/btnCrearEventoDesdeSubMeta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Crear Evento"
+                android:layout_marginEnd="8dp" />
+
+            <Button
+                android:id="@+id/btnSeleccionarEventoSubMeta"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Vincular Evento" />
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/btnGuardarSubMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Guardar Sub-Meta"
+            android:padding="12dp"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+</ScrollView>

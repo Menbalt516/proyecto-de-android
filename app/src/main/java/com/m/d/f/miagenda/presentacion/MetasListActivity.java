@@ -1,63 +1,67 @@
 package com.m.d.f.miagenda.presentacion;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import android.widget.Button;
 
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.m.d.f.miagenda.R;
+import com.m.d.f.miagenda.datos.MetaDAO;
 import com.m.d.f.miagenda.modelos.Meta;
-import com.m.d.f.miagenda.negocio.MetaNegocio;
-import com.m.d.f.miagenda.presentacion.adapters.MetaAdapter;
+import com.m.d.f.miagenda.presentacion.MetaListItem.MetaListItem;
+import com.m.d.f.miagenda.presentacion.adapters.MetasSeccionAdapter;
+
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MetasListActivity extends AppCompatActivity {
 
-    private Button btnNuevaMeta;
-    private Button btnSeleccionarmeta;
     private RecyclerView recyclerMetas;
-    private MetaAdapter metaAdapter;
-    private List<Meta> metaList;
+    private MetaDAO metaDAO;
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_lista_metas);
+        setContentView(R.layout.activity_metas_list);
 
-        btnNuevaMeta = findViewById(R.id.btnNuevaMeta);
-        btnSeleccionarmeta = findViewById(R.id.btnSeleccionarMeta);
         recyclerMetas = findViewById(R.id.recyclerMetas);
-
-        metaList = new ArrayList<>();
-
         recyclerMetas.setLayoutManager(new LinearLayoutManager(this));
-        metaAdapter = new MetaAdapter(this, metaList);
-        recyclerMetas.setAdapter(metaAdapter);
 
-        btnNuevaMeta.setOnClickListener(v -> {
-            startActivity(new Intent(this, MetaCrearActivity.class));
+        metaDAO = new MetaDAO(this);
+
+        List<Meta> metas = metaDAO.listar();
+        List<Meta> subMetas = metaDAO.listar();
+
+        List<MetaListItem> listaFinal = new ArrayList<>();
+        if (!metas.isEmpty()) {
+            listaFinal.add(new MetaListItem(MetaListItem.Tipo.SECCION, "Metas Principales"));
+            for (Meta m : metas) {
+                listaFinal.add(new MetaListItem(m.getId(), m.getTitulo(), false));
+            }
+        }
+        if (!subMetas.isEmpty()) {
+            listaFinal.add(new MetaListItem(MetaListItem.Tipo.SECCION, "Sub-Metas"));
+            for (Meta s : subMetas) {
+                listaFinal.add(new MetaListItem(s.getId(), s.getTitulo(), true));
+            }
+        }
+
+        MetasSeccionAdapter adapter = new MetasSeccionAdapter(listaFinal, item -> {
+            Intent data = new Intent();
+            if (item.esSubMeta) {
+                data.putExtra("subMetaId", item.id);
+            } else {
+                data.putExtra("metaId", item.id);
+            }
+            data.putExtra("titulo", item.titulo);
+            setResult(RESULT_OK, data);
+            finish();
         });
 
-        btnSeleccionarmeta.setOnClickListener(v -> {
-            startActivity(new Intent(this, MetaDetalleActivity.class));
-        });
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        cargarMetas();
-    }
-
-    private void cargarMetas() {
-        MetaNegocio metaNegocio = new MetaNegocio(this);
-        List<Meta> metas = metaNegocio.obtenerMetas();
-        metaAdapter.actualizarLista(metas);
+        recyclerMetas.setAdapter(adapter);
     }
 }

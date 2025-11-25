@@ -6,131 +6,138 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.m.d.f.miagenda.modelos.Evento;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class EventoDAO {
-    private DatabaseHelper dbHelper;
+
+    private final DatabaseHelper dbHelper;
 
     public EventoDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        this.dbHelper = new DatabaseHelper(context);
     }
 
-    public long insertar(Evento evento) {
+    // INSERTAR
+    public long insertar(Evento e) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-
-        contentValues.put("titulo", evento.getTitulo());
-        contentValues.put("fecha", evento.getFechaMillis());
-        contentValues.put("hora", evento.getHora());
-        contentValues.put("descripcion", evento.getDescripcion());
-        contentValues.put("categoria", evento.getCategoria());
-        contentValues.put("recordatorio", evento.getRecordatorio());
-        contentValues.put("meta_asociada_id", evento.getMetaAsociadaId());
-
-        long id = db.insert("eventos", null, contentValues);
-        db.close();
-        return id;
+        ContentValues values = new ContentValues();
+        values.put("titulo", e.getTitulo());
+        values.put("fecha", e.getFecha());
+        values.put("hora", e.getHora());
+        values.put("descripcion", e.getDescripcion());
+        values.put("categoria", e.getCategoria());
+        values.put("recordatorio", e.isRecordatorio() ? 1 : 0);
+        return db.insert("eventos", null, values);
     }
 
-    public int actualizar(Evento evento) {
+    // ACTUALIZAR
+    public boolean actualizar(Evento e) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues contentValues = new ContentValues();
-
-        contentValues.put("titulo", evento.getTitulo());
-        contentValues.put("fecha", evento.getFechaMillis());
-        contentValues.put("hora", evento.getHora());
-        contentValues.put("descripcion", evento.getDescripcion());
-        contentValues.put("categoria", evento.getCategoria());
-        contentValues.put("recordatorio", evento.getRecordatorio());
-        contentValues.put("meta_asociada_id", evento.getMetaAsociadaId());
-
-        int filas = db.update("eventos", contentValues, "id = ?", new String[]{String.valueOf(evento.getId())});
-        db.close();
-        return filas;
+        ContentValues values = new ContentValues();
+        values.put("titulo", e.getTitulo());
+        values.put("fecha", e.getFecha());
+        values.put("hora", e.getHora());
+        values.put("descripcion", e.getDescripcion());
+        values.put("categoria", e.getCategoria());
+        values.put("recordatorio", e.isRecordatorio() ? 1 : 0);
+        int filas = db.update("eventos", values, "id=?", new String[]{String.valueOf(e.getId())});
+        return filas > 0;
     }
 
-    public int eliminar(int id) {
+    // ELIMINAR
+    public boolean eliminar(int id) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int filas = db.delete("eventos", "id = ?", new String[]{String.valueOf(id)});
-        db.close();
-        return filas;
+        int filas = db.delete("eventos", "id=?", new String[]{String.valueOf(id)});
+        return filas > 0;
     }
 
+    // OBTENER UNO
     public Evento obtenerPorId(int id) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM eventos WHERE id = ?", new String[]{String.valueOf(id)});
+        Cursor c = db.rawQuery("SELECT * FROM eventos WHERE id=?", new String[]{String.valueOf(id)});
 
-        Evento evento = null;
-
-        if (cursor.moveToFirst()) {
-            evento = new Evento(
-                    cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getLong(2),
-                    cursor.getString(3),
-                    cursor.getString(4),
-                    cursor.getString(5),
-                    cursor.getInt(6),
-                    cursor.getInt(7)
-            );
+        if (c.moveToFirst()) {
+            Evento e = cursorToEvento(c);
+            c.close();
+            return e;
         }
-
-        cursor.close();
-        db.close();
-        return evento;
+        c.close();
+        return null;
     }
 
-    public List<Evento> listarTodos() {
+    // LISTAR TODOS
+    public List<Evento> listar() {
         List<Evento> lista = new ArrayList<>();
-
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM eventos ORDER BY fecha, hora", null);
+        Cursor c = db.rawQuery("SELECT * FROM eventos ORDER BY fecha ASC", null);
 
-        while (cursor.moveToNext()) {
-            lista.add(new Evento(
-                    cursor.getInt(0),
-                    cursor.getString(1),
-                    cursor.getLong(2),
-                    cursor.getString(3),
-                    cursor.getString(4),
-                    cursor.getString(5),
-                    cursor.getInt(6),
-                    cursor.getInt(7)
-            ));
+        while (c.moveToNext()) {
+            lista.add(cursorToEvento(c));
         }
-
-        cursor.close();
-        db.close();
+        c.close();
         return lista;
     }
 
-    public List<Evento> obtenerEventosPorDia(long inicioDia, long finDia) {
+    // LISTAR EVENTOS VINCULADOS A UNA META
+    public List<Evento> listarPorMeta(int metaId) {
         List<Evento> lista = new ArrayList<>();
-
         SQLiteDatabase db = dbHelper.getReadableDatabase();
 
-        Cursor cursor = db.rawQuery(
-                "SELECT id, titulo, descripcion, fecha FROM eventos " +
-                        "WHERE fecha BETWEEN ? AND ? ORDER BY fecha ASC",
-                new String[]{String.valueOf(inicioDia), String.valueOf(finDia)}
+        Cursor c = db.rawQuery(
+                "SELECT e.* FROM eventos e " +
+                        "INNER JOIN evento_meta em ON e.id = em.eventoId " +
+                        "WHERE em.metaId = ?",
+                new String[]{String.valueOf(metaId)}
         );
 
-        if (cursor.moveToFirst()) {
-            do {
-                Evento evento = new Evento();
-                evento.setId(cursor.getInt(0));
-                evento.setTitulo(cursor.getString(1));
-                evento.setDescripcion(cursor.getString(2));
-                evento.setFechaMillis(cursor.getLong(3)); // <- usa getLong, no getString
+        while (c.moveToNext()) lista.add(cursorToEvento(c));
+        c.close();
+        return lista;
+    }
 
-                lista.add(evento);
-            } while (cursor.moveToNext());
+    // LISTAR EVENTOS VINCULADOS A UNA SUBMETA
+    public List<Evento> listarPorSubMeta(int subMetaId) {
+        List<Evento> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        Cursor c = db.rawQuery(
+                "SELECT e.* FROM eventos e " +
+                        "INNER JOIN evento_submeta es ON e.id = es.eventoId " +
+                        "WHERE es.subMetaId = ?",
+                new String[]{String.valueOf(subMetaId)}
+        );
+
+        while (c.moveToNext()) lista.add(cursorToEvento(c));
+        c.close();
+        return lista;
+    }
+
+    private Evento cursorToEvento(Cursor c) {
+        Evento e = new Evento();
+        e.setId(c.getInt(c.getColumnIndexOrThrow("id")));
+        e.setTitulo(c.getString(c.getColumnIndexOrThrow("titulo")));
+        e.setFecha(c.getLong(c.getColumnIndexOrThrow("fecha")));
+        e.setHora(c.getString(c.getColumnIndexOrThrow("hora")));
+        e.setDescripcion(c.getString(c.getColumnIndexOrThrow("descripcion")));
+        e.setCategoria(c.getString(c.getColumnIndexOrThrow("categoria")));
+        e.setRecordatorio(c.getInt(c.getColumnIndexOrThrow("recordatorio")) == 1);
+        return e;
+    }
+    public List<Evento> obtenerEventosPorFecha(long fechaInicio, long fechaFin) {
+        List<Evento> lista = new ArrayList<>();
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        // Selecciona eventos cuya fecha esté entre fechaInicio y fechaFin
+        Cursor c = db.rawQuery(
+                "SELECT * FROM eventos WHERE fecha BETWEEN ? AND ? ORDER BY hora ASC",
+                new String[]{String.valueOf(fechaInicio), String.valueOf(fechaFin)}
+        );
+
+        while (c.moveToNext()) {
+            lista.add(cursorToEvento(c));
         }
-        cursor.close();
-        db.close();
+        c.close();
         return lista;
     }
 }
-
-

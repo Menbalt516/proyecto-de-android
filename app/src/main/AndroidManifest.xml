@@ -2,58 +2,48 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="false" />
+
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.CAMERA" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
-        android:icon="@drawable/ic_default_user"
+        android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.MiAgenda">
 
-        <activity
-            android:name=".presentacion.EventoDetalleActivity"
-            android:exported="false" />
-        <activity
-            android:name=".presentacion.MainActivity"
-            android:exported="true">
+        <!-- Activities -->
+        <activity android:name=".presentacion.CalendarioActivity" android:exported="false" />
+        <activity android:name=".presentacion.MetasActivity" android:exported="false" />
+        <activity android:name=".presentacion.DashboardActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
-        </activity> <!-- ACTIVIDADES DE PERFIL -->
-        <activity
-            android:name=".presentacion.PerfilActivity"
-            android:exported="false" /> <!-- ACTIVIDADES DE METAS -->
-        <activity
-            android:name=".presentacion.EventoCrearActivity"
-            android:exported="false"
-            android:label="Detalle de Meta" />
-        <activity
-            android:name=".presentacion.SubMetasActivity"
-            android:exported="false"
-            android:label="Gestión de Sub-Metas" />
-        <activity
-            android:name=".presentacion.MetaCrearActivity"
-            android:exported="false"
-            android:label="Crear/Editar Evento" />
-        <activity
-            android:name=".presentacion.EventoListActivity"
+        </activity>
+        <activity android:name=".presentacion.PerfilActivity" android:exported="false" />
+        <activity android:name=".presentacion.MetasListActivity" android:exported="false" />
+        <activity android:name=".presentacion.EventosListActivity" android:exported="false" />
+        <activity android:name=".presentacion.CrearEditarEventoActivity" android:exported="false" />
+        <activity android:name=".presentacion.CrearEditarSubmetaActivity" android:exported="false" />
+        <activity android:name=".presentacion.CrearEditarMetaActivity" android:exported="false" />
+        <activity android:name=".presentacion.MetaDetalleActivity" android:exported="false" />
+
+        <!-- Receivers -->
+        <receiver
+            android:name=".notificaciones.NotificacionReceiver"
             android:exported="false" />
-        <activity
-            android:name=".presentacion.CalendarEventosActivity"
-            android:exported="false" />
-        <activity
-            android:name=".presentacion.MetaDetalleActivity"
-            android:exported="false" />
-        <activity
-            android:name=".presentacion.MetasListActivity"
-            android:exported="false" />
-        <activity
-            android:name=".presentacion.MetaSelectorActivity"
+        <receiver
+            android:name=".notificaciones.RecordatorioReceiver"
             android:exported="false" />
     </application>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
 
 </manifest>

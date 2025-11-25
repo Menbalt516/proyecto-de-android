@@ -2,25 +2,49 @@ package com.m.d.f.miagenda.datos;
 
 import android.content.ContentValues;
 import android.content.Context;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 public class SubMetaEventoDAO {
-    private DatabaseHelper dbHelper;
+
+    private final DatabaseHelper dbHelper;
 
     public SubMetaEventoDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        this.dbHelper = new DatabaseHelper(context);
     }
 
-    public long asociar(int subMetaId, int eventoId) {
+    // AGREGAR VÍNCULO
+    public long vincular(int eventoId, int subMetaId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues v = new ContentValues();
 
-        v.put("subMetaId", subMetaId);
-        v.put("eventoId", eventoId);
+        ContentValues values = new ContentValues();
+        values.put("eventoId", eventoId);
+        values.put("subMetaId", subMetaId);
 
-        long id = db.insert("SubMetaEvento", null, v);
-        db.close();
-        return id;
+        return db.insert("evento_submeta", null, values);
+    }
+
+    // ELIMINAR VÍNCULO
+    public boolean desvincular(int eventoId, int subMetaId) {
+        SQLiteDatabase db = dbHelper.getWritableDatabase();
+        int filas = db.delete("evento_submeta", "eventoId=? AND subMetaId=?", new String[]{
+                String.valueOf(eventoId),
+                String.valueOf(subMetaId)
+        });
+        return filas > 0;
+    }
+
+    // SABER SI ESTA VINCULADO
+    public boolean estaVinculado(int eventoId, int subMetaId) {
+        SQLiteDatabase db = dbHelper.getReadableDatabase();
+
+        Cursor c = db.rawQuery(
+                "SELECT id FROM evento_submeta WHERE eventoId=? AND subMetaId=?",
+                new String[]{String.valueOf(eventoId), String.valueOf(subMetaId)}
+        );
+
+        boolean existe = c.moveToFirst();
+        c.close();
+        return existe;
     }
 }
-

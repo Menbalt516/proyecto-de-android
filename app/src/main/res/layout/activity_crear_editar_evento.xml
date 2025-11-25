@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Título -->
+        <TextView
+            android:text="Título"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/edtTituloEvento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Ingrese título"/>
+
+        <!-- Fecha -->
+        <TextView
+            android:text="Fecha"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/btnFechaEvento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seleccionar Fecha"/>
+
+        <TextView
+            android:id="@+id/txtFechaSeleccionada"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No seleccionada"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Hora -->
+        <TextView
+            android:text="Hora"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Button
+            android:id="@+id/btnHoraEvento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Seleccionar Hora"/>
+
+        <TextView
+            android:id="@+id/txtHoraSeleccionada"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No seleccionada"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Descripción -->
+        <TextView
+            android:text="Descripción"
+            android:textStyle="bold"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <EditText
+            android:id="@+id/edtDescripcionEvento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Opcional"/>
+
+        <!-- Categoría -->
+        <TextView
+            android:text="Categoría"
+            android:textStyle="bold"
+            android:layout_marginTop="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <Spinner
+            android:id="@+id/spinnerCategoria"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"/>
+
+        <!-- Recordatorio -->
+        <CheckBox
+            android:id="@+id/chkRecordatorio"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Activar recordatorio"/>
+
+        <!-- Vinculación Meta/SubMeta -->
+        <Button
+            android:id="@+id/btnVincularMeta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Vincular Meta/Sub-Meta"
+            android:layout_marginTop="16dp"/>
+
+        <TextView
+            android:id="@+id/txtMetaVinculada"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="No vinculada"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Guardar -->
+        <Button
+            android:id="@+id/btnGuardarEvento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Guardar"
+            android:layout_marginTop="24dp"/>
+
+    </LinearLayout>
+</ScrollView>

@@ -6,85 +6,90 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
 import com.m.d.f.miagenda.modelos.SubMeta;
+
 import java.util.ArrayList;
-import java.util.List;
 
 public class SubMetaDAO {
-    private DatabaseHelper dbHelper;
+    private final DatabaseHelper dbHelper;
+    private final MetaDAO metaDAO;
 
     public SubMetaDAO(Context context) {
-        dbHelper = new DatabaseHelper(context);
+        this.dbHelper = new DatabaseHelper(context);
+        this.metaDAO = new MetaDAO(context);
     }
 
     public long insertar(SubMeta s) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues v = new ContentValues();
-        v.put("metaId", s.getMetaId());
-        v.put("titulo", s.getTitulo());
-        v.put("descripcion", s.getDescripcion());
-        v.put("completada", s.getCompletada());
-        long id = db.insert("submetas", null, v);
+        ContentValues values = new ContentValues();
+        values.put("metaId", s.getMetaId());
+        values.put("titulo", s.getTitulo());
+        values.put("descripcion", s.getDescripcion());
+        values.put("completada", s.isCompletada());
+
+        long id = db.insert("submetas", null, values);
         db.close();
+        metaDAO.recalcularProgreso(s.getMetaId());
         return id;
     }
 
-    public int actualizar(SubMeta s) {
+    public boolean actualizar(SubMeta s) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        ContentValues v = new ContentValues();
-        v.put("titulo", s.getTitulo());
-        v.put("descripcion", s.getDescripcion());
-        //v.put("completada", s.getCompletada());
-        int filas = db.update("submetas", v, "id = ?", new String[]{String.valueOf(s.getId())});
+        ContentValues values = new ContentValues();
+        values.put("titulo", s.getTitulo());
+        values.put("descripcion", s.getDescripcion());
+        values.put("completada", s.isCompletada());
+        int filas = db.update("submetas", values, "id=?", new String[]{String.valueOf(s.getId())});
         db.close();
-        return filas;
+        metaDAO.recalcularProgreso(s.getMetaId());
+        return filas > 0;
     }
 
-    public int eliminar(int id) {
+    public boolean eliminar(int id, int metaId) {
         SQLiteDatabase db = dbHelper.getWritableDatabase();
-        int filas = db.delete("submetas", "id = ?", new String[]{String.valueOf(id)});
+        int filas = db.delete("submetas", "id=?", new String[]{String.valueOf(id)});
         db.close();
-        return filas;
+        metaDAO.recalcularProgreso(metaId);
+        return filas > 0;
     }
 
-    public List<SubMeta> listarPorMeta(int metaId) {
-        List<SubMeta> lista = new ArrayList<>();
+    public ArrayList<SubMeta> listarPorMeta(int metaId) {
+        ArrayList<SubMeta> lista = new ArrayList<>();
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor c = db.rawQuery("SELECT * FROM submetas WHERE metaId = ?", new String[]{String.valueOf(metaId)});
-        while (c.moveToNext()) {
-            lista.add(new SubMeta(
-                    c.getInt(c.getColumnIndexOrThrow("id")),
-                    c.getInt(c.getColumnIndexOrThrow("metaId")),
-                    c.getString(c.getColumnIndexOrThrow("titulo")),
-                    c.getString(c.getColumnIndexOrThrow("descripcion")),
-                    c.getInt(c.getColumnIndexOrThrow("completada"))
-            ));
+        Cursor c = db.rawQuery("SELECT id,metaId,titulo,descripcion,completada FROM submetas WHERE metaId=? ORDER BY id ASC",
+                new String[]{String.valueOf(metaId)});
+        if (c.moveToFirst()) {
+            do {
+                SubMeta s = new SubMeta();
+                s.setId(c.getInt(0));
+                s.setMetaId(c.getInt(1));
+                s.setTitulo(c.getString(2));
+                s.setDescripcion(c.getString(3));
+                s.setCompletada(c.getInt(4) == 1);
+                lista.add(s);
+            } while (c.moveToNext());
         }
         c.close();
         db.close();
         return lista;
     }
 
-    public int contarSubMetasCompletadas(int metaId) {
+    public SubMeta obtener(int id) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery(
-                "SELECT COUNT(*) FROM submetas WHERE metaId=? AND completada=1",
-                new String[]{String.valueOf(metaId)});
-        int total = 0;
-        if (cursor.moveToFirst()) total = cursor.getInt(0);
-        cursor.close();
+        Cursor c = db.rawQuery("SELECT id,metaId,titulo,descripcion,completada FROM submetas WHERE id=?",
+                new String[]{String.valueOf(id)});
+        if (!c.moveToFirst()) {
+            c.close();
+            db.close();
+            return null;
+        }
+        SubMeta s = new SubMeta();
+        s.setId(c.getInt(0));
+        s.setMetaId(c.getInt(1));
+        s.setTitulo(c.getString(2));
+        s.setDescripcion(c.getString(3));
+        s.setCompletada(c.getInt(4) == 1);
+        c.close();
         db.close();
-        return total;
-    }
-
-    public int contarSubMetas(int metaId) {
-        SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.rawQuery(
-                "SELECT COUNT(*) FROM submetas WHERE metaId=?",
-                new String[]{String.valueOf(metaId)});
-        int total = 0;
-        if (cursor.moveToFirst()) total = cursor.getInt(0);
-        cursor.close();
-        db.close();
-        return total;
+        return s;
     }
 }

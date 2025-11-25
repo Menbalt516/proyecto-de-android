@@ -3,26 +3,34 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:padding="48dp">
+    android:padding="12dp"
+    android:gravity="center_vertical">
 
+    <!-- Checkbox de completada -->
+    <CheckBox
+        android:id="@+id/chkCompletada"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="12dp" />
+
+    <!-- Título de la SubMeta -->
     <TextView
-        android:id="@+id/txtTituloSubmeta"
-        android:layout_width="32dp"
+        android:id="@+id/txtTituloSubMeta"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:text="Sub-meta"
-        android:textSize="16sp" />
+        android:text="Título SubMeta"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:padding="4dp" />
 
-    <CheckBox
-        android:id="@+id/chkCompletado"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+    <!-- Botón Editar -->
+    <ImageButton
+        android:id="@+id/btnEditarSubMeta"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@android:color/transparent"
+        android:src="@android:drawable/ic_menu_edit"
+        android:contentDescription="Editar SubMeta" />
 
-    <Button
-        android:id="@+id/btnEliminarSubMeta"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Eliminar"
-        android:layout_marginStart="48dp"/>
 </LinearLayout>

@@ -1,6 +1,3 @@
 <resources>
     <string name="app_name">Mi Agenda</string>
-    <string name="eventos_para_la_fecha" />
-    <string name="titulo_agenda_calendario" />
-    <string name="agregar_nuevo_evento">Agregar nuevo evento</string>
 </resources>

@@ -5,7 +5,8 @@ public class SubMetaEvento {
     private int subMetaId;
     private int eventoId;
 
-    public SubMetaEvento() {}
+    public SubMetaEvento() {
+    }
 
     public SubMetaEvento(int id, int subMetaId, int eventoId) {
         this.id = id;
@@ -14,13 +15,27 @@ public class SubMetaEvento {
     }
 
     // Getters y Setters
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() {
+        return id;
+    }
 
-    public int getSubMetaId() { return subMetaId; }
-    public void setSubMetaId(int subMetaId) { this.subMetaId = subMetaId; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public int getEventoId() { return eventoId; }
-    public void setEventoId(int eventoId) { this.eventoId = eventoId; }
+    public int getSubMetaId() {
+        return subMetaId;
+    }
+
+    public void setSubMetaId(int subMetaId) {
+        this.subMetaId = subMetaId;
+    }
+
+    public int getEventoId() {
+        return eventoId;
+    }
+
+    public void setEventoId(int eventoId) {
+        this.eventoId = eventoId;
+    }
 }
-
